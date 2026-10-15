@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PDF Answer Remover</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #0f1419;
+        --surface: #1a2332;
+        --border: #2d3a4f;
+        --text: #e8eef7;
+        --muted: #8b9cb3;
+        --accent: #3b82f6;
+        --accent-hover: #2563eb;
+        --success: #22c55e;
+        --danger: #ef4444;
+        --drop-bg: rgba(59, 130, 246, 0.06);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: "DM Sans", system-ui, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        line-height: 1.5;
+      }
+
+      .wrap {
+        max-width: 520px;
+        margin: 0 auto;
+        padding: 3rem 1.25rem 4rem;
+      }
+
+      header {
+        text-align: center;
+        margin-bottom: 2rem;
+      }
+
+      h1 {
+        font-size: 1.65rem;
+        font-weight: 700;
+        margin: 0 0 0.5rem;
+        letter-spacing: -0.02em;
+      }
+
+      .subtitle {
+        color: var(--muted);
+        font-size: 0.95rem;
+        margin: 0;
+      }
+
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 1.5rem;
+      }
+
+      .dropzone {
+        border: 2px dashed var(--border);
+        border-radius: 12px;
+        padding: 2.5rem 1.5rem;
+        text-align: center;
+        cursor: pointer;
+        transition: border-color 0.15s, background 0.15s;
+        background: transparent;
+      }
+
+      .dropzone:hover,
+      .dropzone.dragover {
+        border-color: var(--accent);
+        background: var(--drop-bg);
+      }
+
+      .dropzone input {
+        display: none;
+      }
+
+      .dropzone-icon {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+        opacity: 0.9;
+      }
+
+      .dropzone p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+
+      .dropzone .file-name {
+        margin-top: 0.75rem;
+        color: var(--text);
+        font-weight: 500;
+        word-break: break-all;
+      }
+
+      .file-name:empty {
+        display: none;
+      }
+
+      button.primary {
+        width: 100%;
+        margin-top: 1.25rem;
+        padding: 0.85rem 1.25rem;
+        font-family: inherit;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #fff;
+        background: var(--accent);
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: background 0.15s, opacity 0.15s;
+      }
+
+      button.primary:hover:not(:disabled) {
+        background: var(--accent-hover);
+      }
+
+      button.primary:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+      }
+
+      .status {
+        margin-top: 1rem;
+        min-height: 1.25rem;
+        font-size: 0.875rem;
+        text-align: center;
+      }
+
+      .status.error {
+        color: var(--danger);
+      }
+
+      .status.success {
+        color: var(--success);
+      }
+
+      .status.loading {
+        color: var(--muted);
+      }
+
+      .spinner {
+        display: inline-block;
+        width: 1em;
+        height: 1em;
+        border: 2px solid var(--border);
+        border-top-color: var(--accent);
+        border-radius: 50%;
+        animation: spin 0.7s linear infinite;
+        vertical-align: -0.15em;
+        margin-right: 0.35rem;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .note {
+        margin-top: 1.5rem;
+        padding-top: 1.25rem;
+        border-top: 1px solid var(--border);
+        font-size: 0.8rem;
+        color: var(--muted);
+      }
+
+      .note ul {
+        margin: 0.5rem 0 0;
+        padding-left: 1.2rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <h1>PDF Answer Remover</h1>
+        <p class="subtitle">
+          Upload a worksheet PDF — red answer text is removed so students see
+          questions only.
+        </p>
+      </header>
+
+      <div class="card">
+        <form id="upload-form">
+          <label class="dropzone" id="dropzone" for="file-input">
+            <div class="dropzone-icon" aria-hidden="true">📄</div>
+            <p>Drop a PDF here or click to choose</p>
+            <div class="file-name" id="file-name"></div>
+            <input
+              type="file"
+              id="file-input"
+              name="file"
+              accept="application/pdf,.pdf"
+              required
+            />
+          </label>
+          <button type="submit" class="primary" id="submit-btn" disabled>
+            Remove answers &amp; download
+          </button>
+          <div class="status" id="status" role="status"></div>
+        </form>
+
+        <div class="note">
+          <strong>How it works</strong>
+          <ul>
+            <li>Detects red-colored text (typical answer keys).</li>
+            <li>Covers those regions with white — black question text stays.</li>
+            <li>Files are processed on this server and not stored afterward.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const form = document.getElementById("upload-form");
+      const fileInput = document.getElementById("file-input");
+      const fileNameEl = document.getElementById("file-name");
+      const submitBtn = document.getElementById("submit-btn");
+      const statusEl = document.getElementById("status");
+      const dropzone = document.getElementById("dropzone");
+
+      function setFile(file) {
+        if (!file) {
+          fileNameEl.textContent = "";
+          submitBtn.disabled = true;
+          return;
+        }
+        if (file.type !== "application/pdf" && !file.name.toLowerCase().endsWith(".pdf")) {
+          setStatus("Please choose a PDF file.", "error");
+          return;
+        }
+        const dt = new DataTransfer();
+        dt.items.add(file);
+        fileInput.files = dt.files;
+        fileNameEl.textContent = file.name;
+        submitBtn.disabled = false;
+        setStatus("", "");
+      }
+
+      function setStatus(message, kind) {
+        statusEl.textContent = message;
+        statusEl.className = "status" + (kind ? " " + kind : "");
+      }
+
+      fileInput.addEventListener("change", () => {
+        setFile(fileInput.files[0]);
+      });
+
+      dropzone.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        dropzone.classList.add("dragover");
+      });
+      dropzone.addEventListener("dragleave", () => {
+        dropzone.classList.remove("dragover");
+      });
+      dropzone.addEventListener("drop", (e) => {
+        e.preventDefault();
+        dropzone.classList.remove("dragover");
+        const file = e.dataTransfer.files[0];
+        setFile(file);
+      });
+
+      function downloadFilename(originalName, contentDisposition) {
+        if (contentDisposition) {
+          const match = /filename\*?=(?:UTF-8''|")?([^";]+)/i.exec(contentDisposition);
+          if (match) {
+            try {
+              return decodeURIComponent(match[1].replace(/"/g, ""));
+            } catch (_) {
+              return match[1];
+            }
+          }
+        }
+        const base = originalName.replace(/\.pdf$/i, "") || "document";
+        return base + "_no_red.pdf";
+      }
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const file = fileInput.files[0];
+        if (!file) return;
+
+        submitBtn.disabled = true;
+        setStatus("Processing… large files may take up to a minute.", "loading");
+        statusEl.innerHTML =
+          '<span class="spinner"></span> Processing… large files may take up to a minute.';
+
+        const body = new FormData();
+        body.append("file", file);
+
+        try {
+          const res = await fetch("/api/process", {
+            method: "POST",
+            body,
+          });
+
+          if (!res.ok) {
+            let msg = "Processing failed.";
+            try {
+              const err = await res.json();
+              if (err.error) msg = err.error;
+            } catch (_) {}
+            setStatus(msg, "error");
+            submitBtn.disabled = false;
+            return;
+          }
+
+          const removed = res.headers.get("X-Red-Regions-Removed");
+          const blob = await res.blob();
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = downloadFilename(
+            file.name,
+            res.headers.get("Content-Disposition")
+          );
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          URL.revokeObjectURL(url);
+
+          const extra =
+            removed != null
+              ? ` Removed ${removed} answer region(s).`
+              : "";
+          setStatus("Done — download started." + extra, "success");
+        } catch (_) {
+          setStatus("Network error. Is the server running?", "error");
+        }
+
+        submitBtn.disabled = false;
+      });
+    </script>
+  </body>
+</html>

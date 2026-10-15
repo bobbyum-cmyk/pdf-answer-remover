@@ -1,0 +1,12 @@
+# Render Blueprint: https://render.com/docs/blueprint-spec
+# Connect this repo in the Render dashboard → New → Blueprint.
+services:
+  - type: web
+    name: pdf-answer-remover
+    runtime: docker
+    plan: free
+    region: singapore
+    healthCheckPath: /health
+    envVars:
+      - key: MAX_UPLOAD_MB
+        value: "50"
