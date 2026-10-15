@@ -9,18 +9,37 @@ Your code is already on GitHub:
 
 ## Option 1: JustRunMy.App (recommended, no card)
 
-Public HTTPS URL, deploys your **Dockerfile** from GitHub. Free baseline: small RAM (may struggle with very large PDFs — use files under ~10 MB if you hit memory limits).
+Public HTTPS URL. **There is no “deploy from GitHub” button** — JustRunMy uses **Zip upload** or **Git push to their own remote** (not GitHub).
 
-1. Sign up: **https://justrunmy.app/** (no credit card).
-2. **Create app** → deploy method **Git Push** or connect **GitHub** repo `bobbyum-cmyk/pdf-answer-remover`.
-3. In app settings:
-   - **Port / HTTPS:** expose **`10000`** (matches the Dockerfile).
-   - **Health check path (if offered):** `/health`
-   - **Environment:** `MAX_UPLOAD_MB=30` (optional, lowers memory vs 50).
-4. Deploy and wait for the build to finish.
-5. Open the HTTPS URL they give you and test an upload.
+Free baseline: small RAM (may struggle with very large PDFs — use files under ~10 MB if you hit memory limits).
 
-If the container is **killed (OOM)** on big PDFs, try a smaller file or upgrade RAM in their panel (paid) — or use Option 2.
+### A) Zip upload (easiest)
+
+1. Sign up / open panel: **https://justrunmy.app/panel**
+2. **Add app** → choose **Zip Upload** (not Template).
+3. Upload `pdf-answer-remover-deploy.zip` from this project (create it with `./scripts/make-deploy-zip.sh`).
+4. After the app exists, open its settings:
+   - **HTTPS / port:** map **`10000`** (must match the Dockerfile).
+   - **Env (optional):** `MAX_UPLOAD_MB=30`
+5. Start / deploy, wait for the build, open the public HTTPS link.
+
+### B) Git push (updates from your Mac)
+
+1. **Add app** → choose **Git Push**.
+2. Copy the **Git URL** the panel shows (one-liner like `git remote add jrma …`).
+3. On your machine:
+
+   ```bash
+   cd /Users/leungchiwai/Downloads/Transfer
+   git remote add jrma '<PASTE-URL-FROM-PANEL>'
+   git push jrma main
+   ```
+
+4. Set port **`10000`** in the app settings, then redeploy if needed.
+
+GitHub is only for your backup; JustRunMy builds from **zip** or **push to jrma**, not from github.com.
+
+If the container is **killed (OOM)** on big PDFs, try a smaller file or use Option 2 (Enzonic, 512 MB).
 
 ---
 
