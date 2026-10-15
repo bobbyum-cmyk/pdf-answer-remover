@@ -2,7 +2,9 @@
 
 This app is packaged as a **Docker** image. The easiest free option that runs the full upload/process flow (not static-only) is **Render**.
 
-## Recommended: [Render](https://render.com) (free, no credit card)
+## Recommended: [Render](https://render.com) (free tier — **card often required**)
+
+> As of 2026, Render frequently asks for a credit card on signup even for the Free plan (verification; you are not charged unless you upgrade). For **no card**, use [`DEPLOY-NO-CARD.md`](DEPLOY-NO-CARD.md) (JustRunMy.App, Enzonic, or Cloudflare Tunnel).
 
 **What you get:** public HTTPS URL, Docker deploy, **750 instance-hours/month**, 512 MB RAM.
 
